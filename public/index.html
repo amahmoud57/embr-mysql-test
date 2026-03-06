@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><title>Embr MySQL Test</title></head>
+<body>
+  <h1>Embr MySQL Test App</h1>
+  <div id="status">Loading...</div>
+  <h2>Todos</h2>
+  <form id="addForm"><input id="title" placeholder="New todo"><button type="submit">Add</button></form>
+  <ul id="todos"></ul>
+  <script>
+    async function load() {
+      try {
+        const r = await fetch('/health');
+        const h = await r.json();
+        document.getElementById('status').textContent = 'Health: ' + JSON.stringify(h);
+      } catch(e) { document.getElementById('status').textContent = 'Error: ' + e.message; }
+      try {
+        const r = await fetch('/api/todos');
+        const todos = await r.json();
+        document.getElementById('todos').innerHTML = todos.map(t =>
+          '<li>' + t.title + ' (' + (t.completed ? 'done' : 'pending') + ')</li>'
+        ).join('');
+      } catch(e) {}
+    }
+    document.getElementById('addForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      await fetch('/api/todos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title}) });
+      document.getElementById('title').value = '';
+      load();
+    };
+    load();
+  </script>
+</body>
+</html>
